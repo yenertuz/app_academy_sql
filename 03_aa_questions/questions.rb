@@ -174,7 +174,7 @@ class Reply
 		SQL
 		return nil if data.length == 0
 		Question.new(data[0])
-	end
+	end 
 
 	def parent_reply
 		raise "#{self} not in database" if @id == nil
@@ -192,6 +192,8 @@ class Reply
 		SQL
 		data.map { |datum| Reply.new(datum) }
 	end
+
+
 
 end
 

@@ -38,10 +38,12 @@ CREATE TABLE replies (
 	id INTEGER PRIMARY KEY,
 	question_id INTEGER NOT NULL,
 	reply_id INTEGER,
+	user_id INTEGER,
 	body TEXT,
 
 	FOREIGN KEY (question_id) REFERENCES questions(id),
-	FOREIGN KEY (reply_id) REFERENCES replies(id)
+	FOREIGN KEY (reply_id) REFERENCES replies(id),
+	FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE question_likes (
@@ -76,8 +78,8 @@ VALUES (1,3), (2,1), (2, 3);
 INSERT INTO question_likes (question_id, user_id)
 VALUES (1,3), (2,1), (2, 3);
 
-INSERT INTO replies (question_id, reply_id, body)
+INSERT INTO replies (question_id, reply_id, body, user_id)
 VALUES
-(1, NULL, "SQLite3 is better for smaller and simpler apps"),
-(1, 1, "Yes and PostgreSQL is better for bigger apps"),
-(2,  NULL, "Ruby is the way to go!");
+(1, NULL, "SQLite3 is better for smaller and simpler apps", 1),
+(1, 1, "Yes and PostgreSQL is better for bigger apps", 2),
+(2,  NULL, "Ruby is the way to go!", 3);
