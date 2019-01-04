@@ -103,7 +103,7 @@ class Playwright
 	def update
 		raise "#{self} not in database" unless self.id
     	PlayDBConnection.instance.execute(<<-SQL, self.name, self.birth_year, self.id)
-		UPDATE
+		UPDATEcd 
 			playwrights
 		SET
 			name = ? , birth_year = ?
