@@ -1,5 +1,8 @@
-equire 'sqlite3'
+require 'sqlite3'
 require 'singleton'
+
+# .headers on
+# .mode column
 
 class PlayDBConnection < SQLite3::Database
   include Singleton
@@ -27,7 +30,7 @@ class User
 	end
 
 	def self.find_by_id(id)
-		data = PlayDBConnection(<<-SQL, id)
+		data = PlayDBConnection.instance.execute(<<-SQL, id)
 		SELECT * FROM users WHERE id = ? ;
 		SQL
 		return nil if data.length == 0
@@ -47,7 +50,7 @@ class Question
 	end
 
 	def self.find_by_id(id)
-		data = PlayDBConnection(<<-SQL, id)
+		data = PlayDBConnection.instance.execute(<<-SQL, id)
 		SELECT * FROM questions WHERE id = ? ;
 		SQL
 		return nil if data.length == 0
@@ -66,7 +69,7 @@ class QuestionFollow
 	end
 
 	def self.find_by_id(id)
-		data = PlayDBConnection(<<-SQL, id)
+		data = PlayDBConnection.instance.execute(<<-SQL, id)
 		SELECT * FROM question_follows WHERE id = ? ;
 		SQL
 		return nil if data.length == 0
@@ -87,7 +90,7 @@ class Reply
 	end
 
 	def self.find_by_id(id)
-		data = PlayDBConnection(<<-SQL, id)
+		data = PlayDBConnection.instance.execute(<<-SQL, id)
 		SELECT * FROM replies WHERE id = ? ;
 		SQL
 		return nil if data.length == 0
@@ -106,7 +109,7 @@ class QuestionLike
 	end
 
 	def self.find_by_id(id)
-		data = PlayDBConnection(<<-SQL, id)
+		data = PlayDBConnection.instance.execute(<<-SQL, id)
 		SELECT * FROM question_likes WHERE id = ? ;
 		SQL
 		return nil if data.length == 0
