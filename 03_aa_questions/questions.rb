@@ -91,6 +91,29 @@ class User
 		count_questions.to_f / count_likes
 	end
 
+	def save
+		return create if @id == nil
+		update
+	end
+
+	private
+
+	def create
+		PlayDBConnection.instance.execute(<<-SQL, @fname, @lname)
+		insert into users (fname, lname)
+		values ( ? , ? )
+		SQL
+		@id = PlayDBConnection.instance.last_insert_row_id
+	end
+
+	def update 
+		PlayDBConnection.instance.execute(<<-SQL, @fname, @lname, @id)
+		update users
+		set fname = ? , lname = ?
+		where id = ?
+		SQL
+	end
+
 end
 
 class Question
@@ -161,6 +184,29 @@ class Question
 
 	def self.most_liked(n)
 		QuestionLike.most_liked_questions(n)
+	end
+
+	def save
+		return create if @id == nil
+		update
+	end
+
+	private
+
+	def create
+		PlayDBConnection.instance.execute(<<-SQL, @title, @body, @user_id)
+		insert into questions (title, body, user_id)
+		values ( ? , ? , ? )
+		SQL
+		@id = PlayDBConnection.instance.last_insert_row_id
+	end
+
+	def update 
+		PlayDBConnection.instance.execute(<<-SQL, @title, @body, @user_id, @id)
+		update questions
+		set title = ? , body = ? , user_id = ? 
+		where id = ?
+		SQL
 	end
 
 end
@@ -279,7 +325,28 @@ class Reply
 		data.map { |datum| Reply.new(datum) }
 	end
 
+	def save
+		return create if @id == nil
+		update
+	end
 
+	private
+
+	def create
+		PlayDBConnection.instance.execute(<<-SQL, @user_id, @reply_id, @question_id, @body)
+		insert into replies (user_id, reply_id, question_id, body)
+		values ( ? , ? , ? , ?)
+		SQL
+		@id = PlayDBConnection.instance.last_insert_row_id
+	end
+
+	def update 
+		PlayDBConnection.instance.execute(<<-SQL, @user_id, @reply_id, @question_id, @body, @id)
+		update replies
+		set user_id = ? , reply_id = ? , question_id = ? , body = ?
+		where id = ?
+		SQL
+	end
 
 end
 
