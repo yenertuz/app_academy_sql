@@ -60,6 +60,16 @@ class User
 		data.map {  |datum| Reply.new(datum)       }
 	end
 
+	def followed_questions
+		raise "#{self} not in database" if @id == nil
+		data = PlayDBConnection.instance.execute(<<-SQL, @id)
+		SELECT questions.* FROM question_follows
+		JOIN questions ON questions.id=question_follows.question_id
+		WHERE question_follows.user_id = ? ;
+		SQL
+		data.map { |x| Question.new(x) }
+	end
+
 end
 
 class Question
@@ -104,6 +114,16 @@ class Question
 		data.map { |datum| Reply.new(datum)   }
 	end
 
+	def followers
+		raise "#{self} not in database" if @id == nil
+		data = PlayDBConnection.instance.execute(<<-SQL, @id)
+		SELECT users.* FROM question_follows
+		JOIN users ON question_follows.user_id = users.id
+		WHERE question_follows.question_id = ?
+		SQL
+		data.map { |x| User.new(x) }
+	end
+
 end
 
 class QuestionFollow
@@ -121,6 +141,22 @@ class QuestionFollow
 		SQL
 		return nil if data.length == 0
 		QuestionFollow.new(data[0])
+	end
+
+	def self.followers_for_question_id(question_id)
+		data = PlayDBConnection.instance.execute(<<-SQL, question_id)
+		SELECT users.* FROM question_follows JOIN users ON users.id=question_follows.user_id
+		WHERE question_id = ? ;
+		SQL
+		data.map { |x| User.new(x) }
+	end
+
+	def self.followed_questions_for_user_id(user_id)
+		data = PlayDBConnection.instance.execute(<<-SQL, user_id)
+		SELECT questions.* FROM question_follows JOIN questions ON questions.id=question_follows.question_id
+		WHERE question_follows.user_id = ? ;
+		SQL
+		data.map { |x| Question.new(x) }
 	end
 
 end
