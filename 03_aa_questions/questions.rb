@@ -70,6 +70,27 @@ class User
 		data.map { |x| Question.new(x) }
 	end
 
+	def liked_questions
+		raise "#{self} not in database" if @id == nil
+		QuestionLike.liked_questions_for_user_id(@id)
+	end
+
+	def average_karma
+		raise "#{self} not in database" if @id == nil
+		data = PlayDBConnection.instance.execute(<<-SQL, @id)
+		select count(question_likes.id), count(distinct questions.id), questions.user_id
+		from questions
+		left join question_likes on question_likes.question_id=questions.id
+		where question_likes.id is not null
+		and questions.user_id = ?
+		group by questions.user_id;
+		SQL
+		data = data[0]
+		count_questions = data["count(distinct questions.id)"]
+		count_likes = data["count(question_likes.id)"]
+		count_questions.to_f / count_likes
+	end
+
 end
 
 class Question
@@ -126,6 +147,20 @@ class Question
 
 	def self.most_followed(n)
 		QuestionFollow.most_followed_questions(n)
+	end
+
+	def likers
+		raise "#{self} not in database" if @id == nil
+		QuestionLike.likers_for_question_id(@id)
+	end
+	
+	def num_likes
+		raise "#{self} not in database" if @id == nil
+		QuestionLike.num_likes_for_question_id(@id)
+	end
+
+	def self.most_liked(n)
+		QuestionLike.most_liked_questions(n)
 	end
 
 end
@@ -280,6 +315,26 @@ class QuestionLike
 		where question_id = ?
 		SQL
 		data[0]["count(user_id)"]
+	end
+
+	def self.liked_questions_for_user_id(user_id)
+		data = PlayDBConnection.instance.execute(<<-SQL, user_id)
+		select users.* from question_likes
+		join users on users.id=question_likes.user_id
+		where question_likes.user_id = ? ;
+		SQL
+		data.map { |x| User.new(x) }
+	end
+
+	def self.most_liked_questions(n)
+		data = PlayDBConnection.instance.execute(<<-SQL, n)
+		select questions.*, count(question_likes.user_id) as count from questions
+		join question_likes on questions.id=question_likes.question_id
+		group by questions.id
+		order by count
+		limit ? ;
+		SQL
+		data.map { |x| Question.new(x) }
 	end
 
 end
