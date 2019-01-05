@@ -124,6 +124,10 @@ class Question
 		data.map { |x| User.new(x) }
 	end
 
+	def self.most_followed(n)
+		QuestionFollow.most_followed_questions(n)
+	end
+
 end
 
 class QuestionFollow
@@ -155,6 +159,17 @@ class QuestionFollow
 		data = PlayDBConnection.instance.execute(<<-SQL, user_id)
 		SELECT questions.* FROM question_follows JOIN questions ON questions.id=question_follows.question_id
 		WHERE question_follows.user_id = ? ;
+		SQL
+		data.map { |x| Question.new(x) }
+	end
+
+	def self.most_followed_questions(n)
+		data = PlayDBConnection.instance.execute(<<-SQL, n)
+		SELECT questions.*, count(question_follows.id) from question_follows
+		join questions on question_follows.question_id=questions.id
+		group by question_follows.question_id
+		order by count(question_follows.id)
+		limit ? ;
 		SQL
 		data.map { |x| Question.new(x) }
 	end
@@ -248,6 +263,23 @@ class QuestionLike
 		SQL
 		return nil if data.length == 0
 		QuestionLike.new(data[0])
+	end
+
+	def self.likers_for_question_id(question_id)
+		data = PlayDBConnection.instance.execute(<<-SQL, question_id)
+		select users.* from question_likes
+		join users on question_likes.user_id=users.id
+		where question_likes.question_id = ? ;
+		SQL
+		data.map { |x| User.new(x) }
+	end
+
+	def self.num_likes_for_question_id(question_id)
+		data = PlayDBConnection.instance.execute(<<-SQL, question_id)
+		select count(user_id) from question_likes
+		where question_id = ?
+		SQL
+		data[0]["count(user_id)"]
 	end
 
 end
