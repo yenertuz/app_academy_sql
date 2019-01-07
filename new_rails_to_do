@@ -1,0 +1,19 @@
+1. -G --database=postgresql
+
+Don't initialize a git repo 
+
+Change the database manager from sqlite3 to postgresql
+
+2. db.yaml change database names
+
+3. gemfile add 'pry-rails'
+
+4. rake db:create
+
+5. add create_table migrations
+
+6. add add_column migrations
+
+7. add models
+
+8. add belongs_to, has_many, and through: associations
