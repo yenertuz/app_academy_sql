@@ -27,9 +27,9 @@ class ShortenedUrl < ApplicationRecord
 		foreign_key: :shortened_url_id,
 		class_name: :Tagging
 
-	has_many :topics,
+	has_many :tag_topics,
 		through: :taggings,
-		source: :topic
+		source: :tag_topic
 
 
 	def self.random_code
