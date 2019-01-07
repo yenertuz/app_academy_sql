@@ -10,10 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_07_011257) do
+ActiveRecord::Schema.define(version: 2019_01_07_014353) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "shortened_urls", force: :cascade do |t|
+    t.string "long_url", null: false
+    t.string "short_url"
+    t.integer "user_id", null: false
+    t.index ["long_url"], name: "index_shortened_urls_on_long_url"
+  end
 
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
