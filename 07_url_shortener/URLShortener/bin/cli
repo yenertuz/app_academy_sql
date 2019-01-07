@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+
+puts "Input your email:"
+email = gets.chomp
+
+user = User.find_or_create_by(email: email)
+
+puts "\nWhat do oyu want to do?"
+
+
+def create_url(user)
+	puts
+	puts "Type in your long url:"
+	puts
+	long_url = gets.chomp
+	if long_url.include?("https://") == false && long_url.include?("http://") == false
+		long_url = "http://" + long_url
+	end
+	shortened_url = ShortenedUrl.find_by(long_url: long_url)
+	shortened_url = ShortenedUrl.create_shortened_url(user, long_url) unless shortened_url
+	puts "Short url is: #{shortened_url.short_url}"
+	puts
+end
+
+def visit_url(user)
+	puts
+	puts "Type in your shortened URL:"
+	short_url = gets.chomp
+	puts
+	shortened_url = ShortenedUrl.find_by(short_url: short_url)
+	if shortened_url == nil
+		puts "Shortened URL not in the database, quitting"
+	else
+		Visit.record_visit!(user, shortened_url)
+		puts "Launching #{shortened_url.long_url}"
+		puts "Goodbye!"
+		system "open #{shortened_url.long_url}"
+	end
+end
+
+puts <<~END
+0. Create a shortened URL
+1. Visit a shortened URL
+END
+puts "\n"
+input = gets.chomp
+puts
+case input
+when "2"
+	exit 0
+when "0"
+	create_url(user)
+when "1"
+	visit_url(user)
+else
+	puts "Bad input, quitting\n\n"
+end
+
