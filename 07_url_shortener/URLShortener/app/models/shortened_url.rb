@@ -1,6 +1,10 @@
 class ShortenedUrl < ApplicationRecord
+
 	validates :long_url, presence: true, uniqueness: true
 	validates :user_id, presence: true
+	validate :no_spamming
+	validate :nonpremium_max
+	validate :http_prefix
 
 
 	belongs_to :submitter,
@@ -31,6 +35,42 @@ class ShortenedUrl < ApplicationRecord
 		through: :taggings,
 		source: :tag_topic
 
+	def self.prune(n)
+		to_destroy = ShortenedUrl.find_by_sql(<<-SQL)
+		SELECT * FROM shortened_urls
+		WHERE (select count(id) from visits where visits.shortened_url_id = shortened_urls.id) = 0
+		OR
+		(select count(id) from visits where visits.shortened_url_id = shortened_urls.id
+		and visits.created_at > \'#{n.minutes.ago}\'
+		) = 0;
+		SQL
+		to_destroy.each do |single|
+			single.visits.destroy_all
+			single.taggings.destroy_all
+			single.destroy
+		end
+	end
+
+	def http_prefix
+		if self.long_url.include?("http://") == false && self.long_url.include?("https://") == false
+			self.long_url = "http://" + self.long_url
+		end
+		if self.short_url == nil || self.short_url.length == 0
+			self.short_url = self.class.random_code 
+		end
+	end
+
+	def no_spamming
+		if ShortenedUrl.all.where("user_id = ? and created_at > ? ", user_id, 1.minutes.ago).count(:id) >= 5
+			errors[:user_id] << "cannot create more than 5 urls within 1 minute" 
+		end
+	end
+
+	def nonpremium_max
+		if self.submitter.premium == false && ShortenedUrl.all.where("user_id = ? and created_at > ?", user_id, 5.minutes.ago).count(:id) >= 5
+			errors[:user_id] << "cannot create more than 5 urls within 5 minutes unless user has premium plan" 
+		end
+	end
 
 	def self.random_code
 		to_try = SecureRandom::urlsafe_base64

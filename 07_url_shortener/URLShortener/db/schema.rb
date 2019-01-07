@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_07_050906) do
+ActiveRecord::Schema.define(version: 2019_01_07_064735) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,6 +19,8 @@ ActiveRecord::Schema.define(version: 2019_01_07_050906) do
     t.string "long_url", null: false
     t.string "short_url"
     t.integer "user_id", null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.index ["long_url"], name: "index_shortened_urls_on_long_url"
     t.index ["short_url"], name: "index_shortened_urls_on_short_url"
   end
@@ -41,6 +43,7 @@ ActiveRecord::Schema.define(version: 2019_01_07_050906) do
     t.datetime "updated_at", null: false
     t.string "email"
     t.string "#<ActiveRecord::ConnectionAdapters::PostgreSQL::TableDefinition"
+    t.boolean "premium", default: false, null: false
     t.index ["email"], name: "index_users_on_email"
   end
 
