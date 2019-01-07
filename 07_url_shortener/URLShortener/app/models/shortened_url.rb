@@ -38,11 +38,14 @@ class ShortenedUrl < ApplicationRecord
 	def self.prune(n)
 		to_destroy = ShortenedUrl.find_by_sql(<<-SQL)
 		SELECT * FROM shortened_urls
-		WHERE (select count(id) from visits where visits.shortened_url_id = shortened_urls.id) = 0
+		WHERE 
+		(SELECT users.premium from users where users.id = shortened_urls.user_id ) = FALSE
+		AND
+		((select count(id) from visits where visits.shortened_url_id = shortened_urls.id) = 0
 		OR
 		(select count(id) from visits where visits.shortened_url_id = shortened_urls.id
 		and visits.created_at > \'#{n.minutes.ago}\'
-		) = 0;
+		) = 0) ;
 		SQL
 		to_destroy.each do |single|
 			single.visits.destroy_all
