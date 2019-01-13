@@ -15,4 +15,17 @@ class Question < ApplicationRecord
 		foreign_key: :poll_id,
 		class_name: :Poll
 
+	has_many :responses,
+		through: :answer_choices,
+		source: :responses
+
+	def results 
+		answer_choices = self.answer_choices.includes(:responses)
+		results = {}
+		answer_choices.each do |choice|
+			results[choice.text] = choice.responses.length
+		end
+		results
+	end
+
 end
