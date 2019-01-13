@@ -16,7 +16,7 @@ class Response < ApplicationRecord
 		foreign_key: :user_id,
 		class_name: :User
 
-	belongs_to :question,
+	has_one :question,
 		through: :answer_choice,
 		source: :question 
 
