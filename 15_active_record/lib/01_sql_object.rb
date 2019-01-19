@@ -28,13 +28,14 @@ class SQLObject
 	self.columns if @columns == nil
 	self.columns.each do |single_column|
 		define_method(single_column) do
-			self.instance_variable_get("@" + single_column.to_s)
+			@attributes[single_column]
 		end
 		
 		define_method(single_column.to_s + "=") do |parameter|
-			self.instance_variable_set("@" + single_column.to_s, parameter)
+			@attributes[single_column] = parameter
 		end
 	end
+	self.get_column_names
   end
 
   def self.table_name=(table_name)
@@ -72,34 +73,72 @@ class SQLObject
 
   def initialize(params = {})
 	# ...
-	if @columns == nil
-		@columns = self.class.columns
-		self.class.finalize!
-	end
+	self.attributes
 	params.each_key do |key|
-		raise ArgumentError.new "unknown attribute #{key}" if @columns.include?(key.to_sym) == false
-		key_s = key.to_s
-		self.instance_variable_set("@" + key_s, params[key])
+		raise ArgumentError.new "unknown attribute #{key}" if self.class.columns.include?(key.to_sym) == false
+		@attributes[key.to_sym] = params[key]
 	end
   end
 
   def attributes
-    # ...
+	# ...
+	return @attributes if @attributes != nil
+	@attributes = {}
+	self.class.columns.each do |single_column|
+		@attributes[single_column] = nil
+	end
+	@attributes
   end
 
   def attribute_values
-    # ...
+	# ...
+	attribute_values = []
+	if @@columns_without_id == nil 
+		self.class.get_column_names
+	end
+	@@columns_without_id.each do |column_name|
+		attribute_values << self.send(column_name)
+	end
+	attribute_values
+  end
+
+  def self.get_column_names
+	@@columns_without_id = @columns.dup 
+	@@columns_without_id.delete(:id)
+	@@column_names = @columns_without_id.join(", ")
+	@@q_marks = (["?"] * (@columns_without_id.length) ).join(", ")
   end
 
   def insert
-    # ...
+	# ...
+	query = <<-SQL
+	INSERT INTO #{self.class.table_name}
+	( #{@@column_names} )
+	VALUES
+	( #{@@q_marks} )
+	SQL
+	DBConnection.execute(query, *(self.attribute_values))
+	@id = DBConnection.last_insert_row_id
   end
 
   def update
-    # ...
+	# ...
+	set_line = @@columns_without_id.join(" = ?, ") + " = ? "
+	query = <<-SQL
+	UPDATE #{self.class.table_name}
+	SET 
+	#{set_line}
+	WHERE id = ?
+	SQL
+	DBConnection.execute(query, *(self.attribute_values), @id)
   end
 
   def save
-    # ...
+	# ...
+	if id.nil?
+		self.insert 
+	else
+		self.update 
+	end
   end
 end
