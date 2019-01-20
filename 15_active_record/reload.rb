@@ -1,5 +1,5 @@
 def reload 
-	load "./lib/01_sql_object.rb"
+	load "./lib/02_sql_object.rb"
 	eval(<<~SQL)
 	class Cat < SQLObject
 	end
