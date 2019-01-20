@@ -105,8 +105,8 @@ class SQLObject
   def self.get_column_names
 	@@columns_without_id = @columns.dup 
 	@@columns_without_id.delete(:id)
-	@@column_names = @columns_without_id.join(", ")
-	@@q_marks = (["?"] * (@columns_without_id.length) ).join(", ")
+	@@column_names = @@columns_without_id.join(", ")
+	@@q_marks = (["?"] * (@@columns_without_id.length) ).join(", ")
   end
 
   def insert
@@ -135,7 +135,7 @@ class SQLObject
 
   def save
 	# ...
-	if id.nil?
+	if @attributes[id].nil?
 		self.insert 
 	else
 		self.update 
