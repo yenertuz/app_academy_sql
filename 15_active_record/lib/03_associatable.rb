@@ -10,34 +10,34 @@ class AssocOptions
   )
 
   def model_class
-    # ...
+
   end
 
   def table_name
-    # ...
+
   end
 end
 
 class BelongsToOptions < AssocOptions
   def initialize(name, options = {})
-    # ...
+
   end
 end
 
 class HasManyOptions < AssocOptions
   def initialize(name, self_class_name, options = {})
-    # ...
+
   end
 end
 
 module Associatable
   # Phase IIIb
   def belongs_to(name, options = {})
-    # ...
+
   end
 
   def has_many(name, options = {})
-    # ...
+
   end
 
   def assoc_options
